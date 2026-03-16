@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olympiad Preparation Hub for Pakistani Students</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #bb86fc;
+            --hover-bg: #2c2c2c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 2rem 1rem;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin: 0 0 10px 0;
+            color: var(--accent-color);
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .quote-container {
+            margin: 1rem auto 2rem;
+            font-style: italic;
+            color: #03dac6;
+            min-height: 30px;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .general-info {
+            background-color: var(--card-bg);
+            border-left: 4px solid var(--accent-color);
+            padding: 1.5rem;
+            max-width: 800px;
+            margin: 1rem auto 3rem;
+            border-radius: 4px;
+            text-align: left;
+        }
+
+        .general-info h3 { margin-top: 0; color: white; }
+        .general-info ul { color: var(--text-muted); padding-left: 20px; }
+
+        .test-prompt {
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            padding: 0 2rem 4rem;
+            width: 100%;
+            max-width: 1000px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            background-color: var(--hover-bg);
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .card h2 { margin: 0 0 10px 0; font-size: 2.2rem; }
+        .card p { margin: 0; color: var(--text-muted); font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Olympiad Preparation Hub for Pakistani Students</h1>
+        <p>The centralized, open-source community resource for National Science Talent Contest preparation.</p>
+        
+        <div class="quote-container">
+            <p id="quote-text">"An investment in knowledge pays the best interest." - Benjamin Franklin</p>
+        </div>
+    </header>
+
+    <div class="general-info">
+        <h3>General NSTC Pipeline Information</h3>
+        <ul>
+            <li><strong>Syllabus:</strong> F.Sc Part 1 books are highly recommended as the baseline for every subject test.</li>
+            <li><strong>Stage 1 (Screening):</strong> A nationwide screening test is held first.</li>
+            <li><strong>Stage 2 (Camp 1):</strong> The top 50 to 80 participants are selected for the first training camp.</li>
+            <li><strong>Stage 3 (Camp 2):</strong> The top 25 participants from Camp 1 advance to the second camp.</li>
+            <li><strong>Stage 4 (Olympiad Team):</strong> The final top students are selected to represent Pakistan internationally.</li>
+        </ul>
+    </div>
+
+    <div class="test-prompt">Which test do you want to prepare for?</div>
+
+    <main class="container">
+        <a href="nmtc.html" class="card"><h2>NMTC</h2><p>Mathematics</p></a>
+        <a href="nptc.html" class="card"><h2>NPTC</h2><p>Physics</p></a>
+        <a href="nbtc.html" class="card"><h2>NBTC</h2><p>Biology</p></a>
+        <a href="nctc.html" class="card"><h2>NCTC</h2><p>Chemistry</p></a>
+    </main>
+
+    <script>
+        const quotes = [
+            "\"An investment in knowledge pays the best interest.\" - Benjamin Franklin",
+            "\"The beautiful thing about learning is that no one can take it away from you.\" - B.B. King",
+            "\"Education is the most powerful weapon which you can use to change the world.\" - Nelson Mandela",
+            "\"The roots of education are bitter, but the fruit is sweet.\" - Aristotle"
+        ];
+        let qIndex = 0;
+        setInterval(() => {
+            qIndex = (qIndex + 1) % quotes.length;
+            document.getElementById('quote-text').innerText = quotes[qIndex];
+        }, 5000);
+    </script>
+</body>
+</html>
