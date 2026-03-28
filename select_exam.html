@@ -20,6 +20,7 @@
             --text-muted: #888888;
             --accent-color: #bb86fc;
             --hover-bg: #262626;
+            --secondary-accent: #03dac6; /* Teal for community section */
         }
 
         body {
@@ -78,7 +79,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
-            padding: 0 2rem 4rem;
+            padding: 0 2rem 2rem;
             width: 100%;
             max-width: 900px;
             box-sizing: border-box;
@@ -103,6 +104,53 @@
 
         .card h2 { margin: 0 0 5px 0; font-size: 2rem; color: var(--accent-color); }
         .card p { margin: 0; color: var(--text-muted); font-size: 1rem; }
+
+        /* --- CONTRIBUTE SECTION --- */
+        .contribute-card {
+            background-color: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin: 1rem auto 4rem auto;
+            width: 90%;
+            max-width: 800px;
+            text-align: left;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .contribute-card h2 {
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            color: var(--secondary-accent);
+        }
+
+        .contribute-card p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-outline {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--secondary-accent);
+            border: 2px solid var(--secondary-accent);
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--secondary-accent);
+            color: #0d0d0d;
+        }
     </style>
 </head>
 <body>
@@ -129,6 +177,12 @@
         <a href="nbtc.html" class="card"><h2>NBTC</h2><p>Biology</p></a>
         <a href="nctc.html" class="card"><h2>NCTC</h2><p>Chemistry</p></a>
     </main>
+
+    <div class="contribute-card">
+        <h2>Community Resources</h2>
+        <p>Access high-yield notes, cheat sheets, and past paper solutions uploaded by the community, or contribute your own materials to help the next generation of Pakistani Olympians.</p>
+        <a href="resources.html" class="btn-outline">Open Community Board &rarr;</a>
+    </div>
 
 </body>
 </html>
