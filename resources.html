@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Resources | Olympiad Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --accent-color: #03dac6; /* Teal for community vibe */
+            --hover-bg: #262626;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .header-link { color: var(--text-muted); text-decoration: none; margin-bottom: 2rem; display: inline-block; }
+        
+        /* The Upload Form */
+        .upload-card {
+            background-color: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .upload-card h2 { margin-top: 0; color: var(--accent-color); }
+        
+        input, select {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #262626;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+        button:hover { opacity: 0.9; }
+
+        /* The Live Feed */
+        .feed-header { border-bottom: 1px solid #333; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+        
+        .resource-item {
+            background-color: var(--card-bg);
+            border-left: 4px solid var(--accent-color);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resource-info h3 { margin: 0 0 5px 0; }
+        .resource-info p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+        
+        .btn-view {
+            background-color: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 4px;
+            width: auto;
+        }
+        .btn-view:hover { background-color: var(--accent-color); color: #000; }
+
+        #loading { color: var(--text-muted); text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="index.html" class="header-link">&larr; Back to Home</a>
+        
+        <div class="upload-card">
+            <h2>Upload a Resource</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Upload your notes to Google Drive, make the link "Anyone with link can view", and paste it below.</p>
+            
+            <form id="resource-form">
+                <input type="text" id="title" placeholder="Resource Title (e.g., Kinematics Short Notes)" required>
+                <select id="subject" required>
+                    <option value="" disabled selected>Select Subject</option>
+                    <option value="NMTC (Math)">NMTC (Math)</option>
+                    <option value="NPTC (Physics)">NPTC (Physics)</option>
+                    <option value="NCTC (Chemistry)">NCTC (Chemistry)</option>
+                    <option value="NBTC (Biology)">NBTC (Biology)</option>
+                </select>
+                <input type="url" id="link" placeholder="Google Drive Link (https://...)" required>
+                <button type="submit" id="submit-btn">Submit to Community Board</button>
+            </form>
+            <p id="form-msg" style="margin-top: 1rem; font-weight: bold; display: none;"></p>
+        </div>
+
+        <h2 class="feed-header">Live Community Board</h2>
+        <div id="loading">Fetching latest resources...</div>
+        <div id="resource-feed">
+            </div>
+    </div>
+
+    <script>
+        // 1. Initialize Supabase with your actual keys
+        const supabaseUrl = 'https://oetdlhxeylswohijqypd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ldGRsaHhleWxzd29oaWpxeXBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2OTEwMDYsImV4cCI6MjA5MDI2NzAwNn0.O0wuALd8lm3YxbbthbDYPQF0vwXULimXdKhrEN7TSDU';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 2. Fetch data from the database
+        async function fetchResources() {
+            const { data, error } = await supabase
+                .from('resources')
+                .select('*')
+                .order('created_at', { ascending: false }); // Newest first
+
+            document.getElementById('loading').style.display = 'none';
+            const feed = document.getElementById('resource-feed');
+            feed.innerHTML = '';
+
+            if (error) {
+                feed.innerHTML = `<p style="color: #cf6679;">Error loading resources. Check console.</p>`;
+                console.error(error);
+                return;
+            }
+
+            if (data.length === 0) {
+                feed.innerHTML = `<p style="color: var(--text-muted);">No resources uploaded yet. Be the first!</p>`;
+                return;
+            }
+
+            // Loop through data and create HTML cards
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'resource-item';
+                
+                // Format the date
+                const date = new Date(item.created_at).toLocaleDateString();
+
+                card.innerHTML = `
+                    <div class="resource-info">
+                        <h3>${item.title}</h3>
+                        <p>${item.subject} • Uploaded: ${date}</p>
+                    </div>
+                    <a href="${item.drive_link}" target="_blank" class="btn-view">View File</a>
+                `;
+                feed.appendChild(card);
+            });
+        }
+
+        // 3. Handle Form Submission
+        document.getElementById('resource-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Stop page reload
+            
+            const btn = document.getElementById('submit-btn');
+            const msg = document.getElementById('form-msg');
+            btn.innerText = 'Uploading...';
+            btn.disabled = true;
+
+            const title = document.getElementById('title').value;
+            const subject = document.getElementById('subject').value;
+            const link = document.getElementById('link').value;
+
+            // Insert into Supabase
+            const { data, error } = await supabase
+                .from('resources')
+                .insert([
+                    { title: title, subject: subject, drive_link: link }
+                ]);
+
+            if (error) {
+                msg.style.color = '#cf6679';
+                msg.innerText = 'Error submitting. Please try again.';
+                console.error(error);
+            } else {
+                msg.style.color = 'var(--accent-color)';
+                msg.innerText = '✅ Successfully added to the board!';
+                document.getElementById('resource-form').reset();
+                fetchResources(); // Instantly refresh the feed
+            }
+
+            btn.innerText = 'Submit to Community Board';
+            btn.disabled = false;
+            msg.style.display = 'block';
+            
+            // Hide message after 3 seconds
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        });
+
+        // Load resources when the page opens
+        fetchResources();
+    </script>
+</body>
+</html>
