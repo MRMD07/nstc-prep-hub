@@ -259,7 +259,14 @@
                 if (data.reply) {
                     appendMessage(data.reply, 'bot', true); 
                 } else {
-                    appendMessage("Error: " + (data.error || "Something went wrong."), 'bot');
+                    let errorText = data.error || "Something went wrong.";
+                    // Check if it's the 429 Quota Error
+                    if (errorText.includes("429") || errorText.includes("RESOURCE_EXHAUSTED") || errorText.includes("quota")) {
+                        errorText = "Whoa, getting too many questions at once! 😅 The Oracle needs a quick 60-second breather. Please try again in a minute!";
+                    } else {
+                        errorText = "Oops! Connection error: " + errorText;
+                    }
+                    appendMessage(errorText, 'bot');
                 }
 
             } catch (error) {
