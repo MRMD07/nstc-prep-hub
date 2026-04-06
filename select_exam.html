@@ -58,6 +58,7 @@
         .section-header { width: 90%; max-width: 850px; margin: 0 auto 1rem; font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
 
         .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem; padding: 0 2rem 2rem; width: 100%; max-width: 850px; }
+        .container-second { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem; padding: 0 2rem 2rem; width: 100%; max-width: 850px; }
         .card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 2rem 1.5rem; text-align: center; text-decoration: none; color: var(--text-main); transition: all 0.2s ease-in-out; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
         .card:hover { transform: translateY(-4px); background-color: #1e1e1e; border-color: #444; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); }
         .icon-box { width: 64px; height: 64px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1.25rem; }
@@ -113,6 +114,7 @@
         @media (max-width: 480px) {
             header { padding: 3rem 1rem 1rem; }
             .container { padding: 0 1rem 2rem; }
+            .container-second { gap: 0; padding: 0; }
             #chatbot-container { bottom: 15px; right: 15px; }
             #chat-window {
                 width: 90vw; 
@@ -167,7 +169,7 @@
             <p>Chemistry</p>
         </a>
     </main>
-    <main class="container">
+    <main class="container-second">
         <div class="contribute-card">
             <h2>📚 Community Resources</h2>
             <p>Access high-yield notes, cheat sheets, and past paper solutions uploaded by the community, or contribute your own materials to help the next generation of Pakistani Olympians.</p>
