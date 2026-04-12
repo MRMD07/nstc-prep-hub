@@ -12,6 +12,16 @@ Access to NSTC training materials is often scattered or hard to access . The NST
 * **Olympiad Oracle (AI Integration):** An chatbot powered by Google's Gemma 4B model to answer syllabus and Olympiad related questions.
 * **UI/UX:** Dark-mode UI for better readability during long study sessions.
 
+----
 
+## 🤝 Contributing
+
+Any meaningful contributions are welcome.
+
+----
+
+## 🛡️ License
+
+This project is licensed under the MIT License.
 
 
