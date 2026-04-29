@@ -243,7 +243,8 @@
         </div>
         <button id="chat-toggle-btn">💬</button>
     </div>
-    <script>
+    <script type="module">
+        import { getLocalStorage, useLocalStorage } from './localstorage.js';
         // Wake-up ping
         fetch('https://MRMD007.pythonanywhere.com/', { mode: 'no-cors' })
             .catch(() => console.log("Oracle waking up..."));
@@ -258,10 +259,13 @@
     
         // GLOBAL persistent context
         let context = [];
-    
+        
         toggleBtn.addEventListener('click', () => {
             chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
             helpTooltip.style.opacity = '0';
+            const initialMessages = getLocalStorage();
+            initialMessages.forEach(msg => appendMessage(msg.text, msg.sender));
+
         });
     
         closeBtn.addEventListener('click', () => chatWindow.style.display = 'none');
@@ -292,6 +296,7 @@
             if (!message) return;
     
             // Add user message
+            useLocalStorage({'text': message, 'sender': 'user'});
             context.push({ role: "user", content: message });
     
             // Keep a reasonable memory
@@ -323,6 +328,7 @@
     
                 if (data.reply) {
                     appendMessage(data.reply, 'bot', true);
+                    useLocalStorage({'text': data.reply, 'sender': 'bot'});
     
                     // Keep role consistent
                     context.push({ role: "assistant", content: data.reply });
@@ -342,11 +348,13 @@
                     }
     
                     appendMessage(errorText, 'bot');
+                    useLocalStorage({'text': errorText, 'sender': 'bot'});
                 }
     
             } catch (error) {
                 document.getElementById(thinkingId)?.remove();
                 appendMessage("Cannot connect to server. Is Python running?", 'bot');
+                useLocalStorage({'text': "Cannot connect to server. Is Python running?", 'sender': 'bot'});
                 console.error(error);
             }
         }
