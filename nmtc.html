@@ -266,6 +266,7 @@
             const initialMessages = getLocalStorage();
             chatMessages.innerHTML = ''; // Clear duplicates
             initialMessages.forEach(msg => appendMessage(msg.text, msg.sender));
+            
         });
     
         closeBtn.addEventListener('click', () => chatWindow.style.display = 'none');
