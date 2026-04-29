@@ -221,6 +221,7 @@
             chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
             helpTooltip.style.opacity = '0';
             const initialMessages = getLocalStorage();
+            chatMessages.innerHTML = ''; // Clear duplicates
             initialMessages.forEach(msg => appendMessage(msg.text, msg.sender));
 
         });
