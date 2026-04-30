@@ -164,7 +164,9 @@
             const initialMessages = getLocalStorage();
             chatMessages.innerHTML = ''; // Clear duplicates
             initialMessages.forEach(msg => appendMessage(msg.text, msg.sender));
-            
+            initialMessages.forEach((msg)=>{
+                context.push({ role: msg.sender === 'user' ? 'user' : 'assistant', content: msg.text });
+            })            
         });
     
         closeBtn.addEventListener('click', () => chatWindow.style.display = 'none');
