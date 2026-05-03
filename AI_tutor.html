@@ -298,12 +298,10 @@
             chatHistory.push({ role: "user", content: userText  });
             
             // Keep array size manageable (22 includes the 2 system prompt messages)
-            if (chatHistory.length > 22) { 
-                chatHistory.splice(2, 2); 
-            }
+            chatHistory = chatHistory.slice(-10);
 
             allSavedChats[currentSubject] = chatHistory;
-            localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
+            localStorage.setItem('new_nstc_tutor_chats', JSON.stringify(allSavedChats));
 
             inputField.value = '';
             inputField.disabled = true;
@@ -327,10 +325,10 @@
                 const data = await response.json();
                 const aiResponse = data.reply;
 
-                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                chatHistory.push({ role: "assistant", content: aiResponse  });
                 
                 allSavedChats[currentSubject] = chatHistory;
-                localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
+                localStorage.setItem('new_nstc_tutor_chats', JSON.stringify(allSavedChats));
 
                 let displayResponse = aiResponse;
                 if (aiResponse.includes('[STATUS: PASSED]')) {
