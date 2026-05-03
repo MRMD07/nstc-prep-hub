@@ -1,1 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor Engine | Secure & Persistent</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --accent-color: #bb86fc; 
+            --success-color: #03dac6; 
+        }
 
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            display: flex; 
+            justify-content: center; 
+            padding: 2rem; 
+            margin: 0; 
+            height: 100vh; 
+            box-sizing: border-box; 
+        }
+
+        .tutor-container { 
+            background-color: var(--card-bg); 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            width: 100%; 
+            max-width: 700px; 
+            display: flex; 
+            flex-direction: column; 
+            height: 90vh; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+
+        .header { 
+            padding: 1.5rem; 
+            border-bottom: 1px solid #333; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+
+        .topic-info h2 { 
+            margin: 0; 
+            font-size: 1.2rem; 
+        }
+
+        .topic-info p { 
+            margin: 5px 0 0 0; 
+            font-size: 0.85rem; 
+            color: var(--accent-color); 
+            font-weight: bold;
+        }
+
+        .subject-selector { 
+            background-color: #262626; 
+            color: white; 
+            border: 1px solid #444; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 0.95rem; 
+            cursor: pointer; 
+        }
+
+        .subject-selector:focus { 
+            border-color: var(--accent-color); 
+        }
+
+        .chat-box { 
+            flex: 1; 
+            padding: 1.5rem; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.5rem; 
+        }
+
+        .message { 
+            max-width: 85%; 
+            padding: 14px 18px; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            line-height: 1.6; 
+        }
+
+        .msg-ai { 
+            background-color: #262626; 
+            border-bottom-left-radius: 2px; 
+            border: 1px solid #333; 
+        }
+
+        .msg-user { 
+            background-color: rgba(187, 134, 252, 0.15); 
+            border: 1px solid rgba(187, 134, 252, 0.4); 
+            align-self: flex-end; 
+            border-bottom-right-radius: 2px; 
+        }
+
+        .msg-loading { 
+            color: var(--accent-color); 
+            font-style: italic; 
+        }
+
+        .input-area { 
+            padding: 1.5rem; 
+            border-top: 1px solid #333; 
+            display: flex; 
+            gap: 10px; 
+        }
+
+        input[type="text"] { 
+            flex: 1; 
+            padding: 14px; 
+            background-color: #262626; 
+            border: 1px solid #444; 
+            color: white; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            outline: none; 
+        }
+
+        input[type="text"]:focus { 
+            border-color: var(--accent-color); 
+        }
+
+        button { 
+            background-color: var(--accent-color); 
+            color: #000; 
+            border: none; 
+            padding: 0 24px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 1rem; 
+            cursor: pointer; 
+        }
+
+        button:disabled { 
+            background-color: #555; 
+            cursor: not-allowed; 
+        }
+
+        .level-up-overlay { 
+            display: none; 
+            position: absolute; 
+            top: 20%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: var(--success-color); 
+            color: #000; 
+            padding: 1rem 2rem; 
+            border-radius: 30px; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            z-index: 1000; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tutor-container">
+        <div class="header">
+            <div class="topic-info">
+                <h2>🧠 NSTC Master Tutor</h2>
+                <p>Model: Gemma 3 27B</p>
+            </div>
+            
+            <select id="subject-menu" class="subject-selector" onchange="startNewTopic()">
+                <option value="Mathematics (NMTC)">Mathematics (NMTC)</option>
+                <option value="Physics (NPTC)">Physics (NPTC)</option>
+                <option value="Chemistry (NCTC)">Chemistry (NCTC)</option>
+                <option value="Biology (NBTC)">Biology (NBTC)</option>
+            </select>
+        </div>
+
+        <div class="chat-box" id="chat-box"></div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="What do you want to learn?..." onkeypress="handleEnter(event)">
+            <button id="send-btn" onclick="handleSend()">Send</button>
+        </div>
+    </div>
+
+    <div class="level-up-overlay" id="level-up-modal">🎉 Topic Mastered! +100 ELO</div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        // REPLACE THIS WITH YOUR ACTUAL PYTHONANYWHERE LINK
+        const BACKEND_URL = 'https://mrmd007.pythonanywhere.com/chat'; 
+
+        // Storage mechanism for saving history between subjects
+        let allSavedChats = JSON.parse(localStorage.getItem('nstc_tutor_chats')) || {};
+        let currentSubject = "";
+        let chatHistory = []; 
+
+        function getSystemPrompt(subject) {
+            return `You are an elite Pakistani Olympiad tutor for the NSTC. Your domain is: ${subject}.
+Follow this methodology once the student picks a topic:
+1. THEORY: Explain intuitively.
+2. EXAMPLE: Walk through a basic example.
+3. CONCEPT CHECK: Ask a simple question and wait.
+4. ESCALATION: Introduce advanced theory.
+5. FINAL TEST: Give an NSTC-level question. 
+Rules: No direct answers for mistakes, give hints. Format cleanly. If they pass the final test, append: [STATUS: PASSED].`;
+        }
+
+        window.onload = startNewTopic;
+
+        function startNewTopic() {
+            // Save the current chat before switching subjects
+            if (currentSubject !== "") {
+                allSavedChats[currentSubject] = [...chatHistory];
+                localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
+            }
+
+            // Set the new subject from the dropdown
+            currentSubject = document.getElementById('subject-menu').value;
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = ''; 
+            
+            // Check if there is existing history for this new subject
+            if (allSavedChats[currentSubject] && allSavedChats[currentSubject].length > 0) {
+                chatHistory = [...allSavedChats[currentSubject]];
+                
+                chatHistory.forEach(msg => {
+                    if (msg.role === 'user' && msg.parts[0].text.startsWith('SYSTEM INSTRUCTIONS:')) return;
+                    
+                    let className = msg.role === 'user' ? 'msg-user' : 'msg-ai';
+                    let textToRender = msg.parts[0].text.replace('[STATUS: PASSED]', '').replace(/\n/g, '<br>');
+                    renderMessage(textToRender, className);
+                });
+            } else {
+                // Start a brand new chat for this subject
+                chatHistory = [];
+                const dynamicSystemPrompt = getSystemPrompt(currentSubject);
+                
+                chatHistory.push({ role: "user", parts: [{ text: "SYSTEM INSTRUCTIONS: " + dynamicSystemPrompt }] });
+                chatHistory.push({ role: "model", parts: [{ text: "Understood." }] });
+
+                const welcomeMessage = `Welcome! I am your AI Tutor for **${currentSubject}**.<br><br>What topic would you like to master today?`;
+                renderMessage(welcomeMessage, 'msg-ai');
+                chatHistory.push({ role: "model", parts: [{ text: welcomeMessage.replace(/<br>/g, '\n') }] });
+            }
+        }
+
+        function handleEnter(e) { 
+            if (e.key === 'Enter') handleSend(); 
+        }
+
+        async function handleSend() {
+            const inputField = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const userText = inputField.value.trim();
+            if (!userText) return;
+
+            renderMessage(userText, 'msg-user');
+            chatHistory.push({ role: "user", parts: [{ text: userText }] });
+            
+            // Keep array size manageable (22 includes the 2 system prompt messages)
+            if (chatHistory.length > 22) { 
+                chatHistory.splice(2, 2); 
+            }
+
+            allSavedChats[currentSubject] = chatHistory;
+            localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
+
+            inputField.value = '';
+            inputField.disabled = true;
+            sendBtn.disabled = true;
+
+            const loadingId = renderMessage("Gemma is thinking...", 'msg-ai msg-loading');
+
+            try {
+                // FETCH CALL TO PYTHONANYWHERE WITH BOT_ID 2
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bot_id: 2, 
+                        history: chatHistory 
+                    })
+                });
+
+                if (!response.ok) throw new Error("Backend connection failed");
+                const data = await response.json();
+                const aiResponse = data.reply;
+
+                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                
+                allSavedChats[currentSubject] = chatHistory;
+                localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
+
+                let displayResponse = aiResponse;
+                if (aiResponse.includes('[STATUS: PASSED]')) {
+                    displayResponse = aiResponse.replace('[STATUS: PASSED]', '').trim();
+                    triggerLevelUp();
+                }
+
+                const msgElement = document.getElementById(loadingId);
+                msgElement.className = 'message msg-ai'; 
+                msgElement.innerHTML = displayResponse.replace(/\n/g, '<br>'); 
+                scrollToBottom();
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById(loadingId).innerText = "Error: Cannot reach the backend. Check console for details.";
+                document.getElementById(loadingId).style.color = "red";
+            } finally {
+                inputField.disabled = false;
+                sendBtn.disabled = false;
+                inputField.focus();
+            }
+        }
+
+        function renderMessage(text, className) {
+            const chatBox = document.getElementById('chat-box');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${className}`;
+            msgDiv.id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000); 
+            msgDiv.innerHTML = text; 
+            chatBox.appendChild(msgDiv);
+            scrollToBottom();
+            return msgDiv.id; 
+        }
+
+        function scrollToBottom() {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function triggerLevelUp() {
+            const modal = document.getElementById('level-up-modal');
+            modal.style.display = 'block';
+            setTimeout(() => { modal.style.display = 'none'; }, 4000);
+        }
+    </script>
+</body>
+</html>
