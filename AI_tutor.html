@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tutor Engine | Secure & Persistent</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
     <style>
         :root {
             --bg-color: #0d0d0d;
@@ -79,6 +81,19 @@
             display: flex; 
             flex-direction: column; 
             gap: 1.5rem; 
+        }
+        .back-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: inline-block;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            margin-left: 1.5rem;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
         }
 
         .message { 
@@ -161,8 +176,9 @@
     </style>
 </head>
 <body>
-
+    
     <div class="tutor-container">
+        <a href="select_exam.html" class="back-link">&larr; Back to Home</a>
         <div class="header">
             <div class="topic-info">
                 <h2>🧠 NSTC Master Tutor</h2>
