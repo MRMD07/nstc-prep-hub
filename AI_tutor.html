@@ -82,10 +82,11 @@
             flex-direction: column; 
             gap: 1.5rem; 
         }
+
         .back-link {
             color: var(--accent-color);
             text-decoration: none;
-            font-size: 1.1rem;
+            font-size: 1rem;
             display: inline-block;
             margin-top: 1rem;
             margin-bottom: 0.5rem;
@@ -175,37 +176,13 @@
         }
 
         @media (max-width: 600px) {
-            body {
-                padding: 0; /* Full width on mobile */
-            }
-
-            .tutor-container {
-                height: 100vh; /* Full screen height */
-                border-radius: 0;
-                border: none;
-            }
-
-            .header {
-                padding: 1rem;
-            }
-
-            .chat-box {
-                padding: 1rem;
-                gap: 1rem;
-            }
-
-            .message {
-                max-width: 90%; /* Wider messages on mobile */
-                font-size: 0.95rem;
-            }
-
-            .input-area {
-                padding: 1rem;
-            }
-
-            button {
-                padding: 0 16px;
-            }
+            body { padding: 0; }
+            .tutor-container { height: 100vh; border-radius: 0; border: none; }
+            .header { padding: 1rem; }
+            .chat-box { padding: 1rem; gap: 1rem; }
+            .message { max-width: 90%; font-size: 0.95rem; }
+            .input-area { padding: 1rem; }
+            button { padding: 0 16px; }
         }
     </style>
 </head>
@@ -238,55 +215,48 @@
     <div class="level-up-overlay" id="level-up-modal">🎉 Topic Mastered! +100 ELO</div>
 
     <script>
-        // ==========================================
-        // CONFIGURATION
-        // ==========================================
-        // REPLACE THIS WITH YOUR ACTUAL PYTHONANYWHERE LINK
         const BACKEND_URL = 'https://mrmd007.pythonanywhere.com/chat'; 
 
-        // Storage mechanism for saving history between subjects
-        let allSavedChats = JSON.parse(localStorage.getItem('new_nstc_tutor_chats')) || {};
+        // Fix Storage Key: Use a consistent name
+        let allSavedChats = JSON.parse(localStorage.getItem('nstc_tutor_chats')) || {};
         let currentSubject = "";
         let chatHistory = []; 
 
         window.onload = startNewTopic;
 
         function startNewTopic() {
-            // Save the current chat before switching subjects
             if (currentSubject !== "") {
                 allSavedChats[currentSubject] = [...chatHistory];
                 localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
             }
 
-            // Set the new subject from the dropdown
             currentSubject = document.getElementById('subject-menu').value;
             const chatBox = document.getElementById('chat-box');
             chatBox.innerHTML = ''; 
             
-            // Check if there is existing history for this new subject
             if (allSavedChats[currentSubject] && allSavedChats[currentSubject].length > 0) {
                 chatHistory = [...allSavedChats[currentSubject]];
                 
                 chatHistory.forEach(msg => {
-                    if (msg.role === 'user' && msg.parts[0].text.startsWith('SYSTEM INSTRUCTIONS:')) return;
+                    // Skip hidden system instructions
+                    if (msg.role === 'user' && msg.parts && msg.parts[0].text.startsWith('SYSTEM INSTRUCTIONS:')) return;
                     
                     let className = msg.role === 'user' ? 'msg-user' : 'msg-ai';
-                    let textToRender = msg.parts[0].text.replace('[STATUS: PASSED]', '').replace(/\n/g, '<br>');
+                    let text = msg.parts ? msg.parts[0].text : (msg.content || "");
+                    let textToRender = text.replace('[STATUS: PASSED]', '').replace(/\n/g, '<br>');
                     renderMessage(textToRender, className);
                 });
             } else {
-                // Start a brand new chat for this subject
                 chatHistory = [];
-
                 const welcomeMessage = `Welcome! I am your AI Tutor for **${currentSubject}**.<br><br>What topic would you like to master today?`;
                 renderMessage(welcomeMessage, 'msg-ai');
-                chatHistory.push({ role: "assistant", content: welcomeMessage.replace(/<br>/g, '\n') });
+                // Use Gemini Format: role: model, parts: [{text}]
+                chatHistory.push({ role: "model", parts: [{ text: welcomeMessage.replace(/<br>/g, '\n') }] });
             }
+            scrollToBottom();
         }
 
-        function handleEnter(e) { 
-            if (e.key === 'Enter') handleSend(); 
-        }
+        function handleEnter(e) { if (e.key === 'Enter') handleSend(); }
 
         async function handleSend() {
             const inputField = document.getElementById('user-input');
@@ -295,13 +265,14 @@
             if (!userText) return;
 
             renderMessage(userText, 'msg-user');
-            chatHistory.push({ role: "user", content: userText  });
+            // Use Gemini Format
+            chatHistory.push({ role: "user", parts: [{ text: userText }] });
             
-            // Keep array size manageable (22 includes the 2 system prompt messages)
-            chatHistory = chatHistory.slice(-10);
+            // Rolling Context Window
+            if (chatHistory.length > 20) { chatHistory = chatHistory.slice(-10); }
 
             allSavedChats[currentSubject] = chatHistory;
-            localStorage.setItem('new_nstc_tutor_chats', JSON.stringify(allSavedChats));
+            localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
 
             inputField.value = '';
             inputField.disabled = true;
@@ -310,25 +281,29 @@
             const loadingId = renderMessage("Gemma is thinking...", 'msg-ai msg-loading');
 
             try {
-                // FETCH CALL TO PYTHONANYWHERE WITH BOT_ID 2
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        subject: currentSubject,
                         bot_id: 2, 
+                        subject: currentSubject,
+                        message: userText, // This key is REQUIRED by your friend's backend
                         history: chatHistory 
                     })
                 });
 
-                if (!response.ok) throw new Error("Backend connection failed");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Backend Error");
+                }
+                
                 const data = await response.json();
                 const aiResponse = data.reply;
 
-                chatHistory.push({ role: "assistant", content: aiResponse  });
+                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
                 
                 allSavedChats[currentSubject] = chatHistory;
-                localStorage.setItem('new_nstc_tutor_chats', JSON.stringify(allSavedChats));
+                localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
 
                 let displayResponse = aiResponse;
                 if (aiResponse.includes('[STATUS: PASSED]')) {
@@ -343,8 +318,7 @@
 
             } catch (error) {
                 console.error(error);
-                document.getElementById(loadingId).innerText = "Error: Cannot reach the backend. Check console for details.";
-                document.getElementById(loadingId).style.color = "red";
+                document.getElementById(loadingId).innerHTML = `<span style="color: #ff4444;">Error: ${error.message}</span>`;
             } finally {
                 inputField.disabled = false;
                 sendBtn.disabled = false;
