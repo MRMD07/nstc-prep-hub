@@ -173,6 +173,40 @@
             font-size: 1.2rem; 
             z-index: 1000; 
         }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0; /* Full width on mobile */
+            }
+
+            .tutor-container {
+                height: 100vh; /* Full screen height */
+                border-radius: 0;
+                border: none;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .chat-box {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .message {
+                max-width: 90%; /* Wider messages on mobile */
+                font-size: 0.95rem;
+            }
+
+            .input-area {
+                padding: 1rem;
+            }
+
+            button {
+                padding: 0 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -243,8 +277,6 @@
             } else {
                 // Start a brand new chat for this subject
                 chatHistory = [];
-                
-                chatHistory.push({ role: "model", parts: [{ text: "Understood." }] });
 
                 const welcomeMessage = `Welcome! I am your AI Tutor for **${currentSubject}**.<br><br>What topic would you like to master today?`;
                 renderMessage(welcomeMessage, 'msg-ai');
