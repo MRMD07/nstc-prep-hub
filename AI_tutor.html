@@ -199,17 +199,6 @@
         let currentSubject = "";
         let chatHistory = []; 
 
-        function getSystemPrompt(subject) {
-            return `You are an elite Pakistani Olympiad tutor for the NSTC. Your domain is: ${subject}.
-Follow this methodology once the student picks a topic:
-1. THEORY: Explain intuitively.
-2. EXAMPLE: Walk through a basic example.
-3. CONCEPT CHECK: Ask a simple question and wait.
-4. ESCALATION: Introduce advanced theory.
-5. FINAL TEST: Give an NSTC-level question. 
-Rules: No direct answers for mistakes, give hints. Format cleanly. If they pass the final test, append: [STATUS: PASSED].`;
-        }
-
         window.onload = startNewTopic;
 
         function startNewTopic() {
@@ -238,9 +227,7 @@ Rules: No direct answers for mistakes, give hints. Format cleanly. If they pass 
             } else {
                 // Start a brand new chat for this subject
                 chatHistory = [];
-                const dynamicSystemPrompt = getSystemPrompt(currentSubject);
                 
-                chatHistory.push({ role: "user", parts: [{ text: "SYSTEM INSTRUCTIONS: " + dynamicSystemPrompt }] });
                 chatHistory.push({ role: "model", parts: [{ text: "Understood." }] });
 
                 const welcomeMessage = `Welcome! I am your AI Tutor for **${currentSubject}**.<br><br>What topic would you like to master today?`;
