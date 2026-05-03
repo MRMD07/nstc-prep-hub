@@ -245,7 +245,7 @@
         const BACKEND_URL = 'https://mrmd007.pythonanywhere.com/chat'; 
 
         // Storage mechanism for saving history between subjects
-        let allSavedChats = JSON.parse(localStorage.getItem('nstc_tutor_chats')) || {};
+        let allSavedChats = JSON.parse(localStorage.getItem('new_nstc_tutor_chats')) || {};
         let currentSubject = "";
         let chatHistory = []; 
 
@@ -280,7 +280,7 @@
 
                 const welcomeMessage = `Welcome! I am your AI Tutor for **${currentSubject}**.<br><br>What topic would you like to master today?`;
                 renderMessage(welcomeMessage, 'msg-ai');
-                chatHistory.push({ role: "model", parts: [{ text: welcomeMessage.replace(/<br>/g, '\n') }] });
+                chatHistory.push({ role: "assistant", content: welcomeMessage.replace(/<br>/g, '\n') });
             }
         }
 
@@ -295,15 +295,13 @@
             if (!userText) return;
 
             renderMessage(userText, 'msg-user');
-            chatHistory.push({ role: "user", parts: [{ text: userText }] });
+            chatHistory.push({ role: "user", content: userText  });
             
             // Keep array size manageable (22 includes the 2 system prompt messages)
-            if (chatHistory.length > 22) { 
-                chatHistory.splice(2, 2); 
-            }
+            chatHistory = chatHistory.slice(-10);
 
             allSavedChats[currentSubject] = chatHistory;
-            localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
+            localStorage.setItem('new_nstc_tutor_chats', JSON.stringify(allSavedChats));
 
             inputField.value = '';
             inputField.disabled = true;
@@ -327,10 +325,10 @@
                 const data = await response.json();
                 const aiResponse = data.reply;
 
-                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                chatHistory.push({ role: "assistant", content: aiResponse  });
                 
                 allSavedChats[currentSubject] = chatHistory;
-                localStorage.setItem('nstc_tutor_chats', JSON.stringify(allSavedChats));
+                localStorage.setItem('new_nstc_tutor_chats', JSON.stringify(allSavedChats));
 
                 let displayResponse = aiResponse;
                 if (aiResponse.includes('[STATUS: PASSED]')) {
