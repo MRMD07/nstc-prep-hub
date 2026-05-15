@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tutor Engine | Secure & Persistent</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     <style>
@@ -215,7 +216,7 @@
     <div class="level-up-overlay" id="level-up-modal">🎉 Topic Mastered! +100 ELO</div>
 
     <script>
-        const BACKEND_URL = 'olympiad-oracle-backend-pwg031w7l-mrmd07s-projects.vercel.app'; 
+        const BACKEND_URL = 'https://olympiad-oracle-backend-pwg031w7l-mrmd07s-projects.vercel.app/chat'; 
 
         // Fix Storage Key: Use a consistent name
         let allSavedChats = JSON.parse(localStorage.getItem('nstc_tutor_chats')) || {};
@@ -238,14 +239,15 @@
                 chatHistory = [...allSavedChats[currentSubject]];
                 
                 chatHistory.forEach(msg => {
-                    // Skip hidden system instructions
-                    if (msg.role === 'user' && msg.parts && msg.parts[0].text.startsWith('SYSTEM INSTRUCTIONS:')) return;
-                    
-                    let className = msg.role === 'user' ? 'msg-user' : 'msg-ai';
-                    let text = msg.parts ? msg.parts[0].text : (msg.content || "");
-                    let textToRender = text.replace('[STATUS: PASSED]', '').replace(/\n/g, '<br>');
-                    renderMessage(textToRender, className);
-                });
+                  if (msg.role === 'user' && msg.parts && msg.parts[0].text.startsWith('SYSTEM INSTRUCTIONS:')) return;
+    
+                  let className = msg.role === 'user' ? 'msg-user' : 'msg-ai';
+                  let text = msg.parts ? msg.parts[0].text : (msg.content || "");
+    
+   
+                 let content = (className === 'msg-ai') ? marked.parse(text.replace('[STATUS: PASSED]', '')) : text;
+                 renderMessage(content, className);
+              });
             } else {
                 chatHistory = [];
                 const welcomeMessage = `Welcome! I am your AI Tutor for **${currentSubject}**.<br><br>What topic would you like to master today?`;
@@ -312,7 +314,7 @@
 
                 const msgElement = document.getElementById(loadingId);
                 msgElement.className = 'message msg-ai'; 
-                msgElement.innerHTML = displayResponse.replace(/\n/g, '<br>'); 
+                msgElement.innerHTML = marked.parse(displayResponse);
                 scrollToBottom();
 
             } catch (error) {
