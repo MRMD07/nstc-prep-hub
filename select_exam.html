@@ -225,7 +225,7 @@
     <script type="module">
         import { getLocalStorage, useLocalStorage } from './localstorage.js';
         // Wake-up ping
-        fetch('https://MRMD007.pythonanywhere.com/', { mode: 'no-cors' })
+        fetch('https://olympiad-oracle-backend-pwg031w7l-mrmd07s-projects.vercel.app/', { mode: 'no-cors' })
             .catch(() => console.log("Oracle waking up..."));
     
         const chatWindow = document.getElementById('chat-window');
@@ -296,7 +296,7 @@
             scrollToBottom();
     
             try {
-                const response = await fetch('https://MRMD007.pythonanywhere.com/chat', {
+                const response = await fetch('https://olympiad-oracle-backend-pwg031w7l-mrmd07s-projects.vercel.app/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
     
